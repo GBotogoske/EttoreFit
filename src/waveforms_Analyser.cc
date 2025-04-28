@@ -1,6 +1,11 @@
 #include "waveforms_Analyser.hh"
 
 #include <algorithm>
+#include "TGraph.h"
+#include "TCanvas.h"
+
+#include <TROOT.h> 
+
 
 namespace fs = std::filesystem;
 
@@ -114,9 +119,50 @@ std::vector<waveform_Analyser *> waveforms_Analyser::get_wf_Analyser_vector_by_v
     return matching_analyser;
 }
 
-void waveforms_Analyser::fit_channel(const int ch, double* par, int n_par)
+void waveforms_Analyser::plot_slow_comp(std::vector<waveform_Analyser*> analyser)
+{
+    gROOT->SetBatch(kTRUE);
+
+    int n = analyser.size();
+    
+    std::vector<double> e_field(n);
+    std::vector<double> y(n);
+
+    auto ch=analyser[0]->get_ch();
+
+    for(int i=0; i<n ; i++)
+    {
+        e_field[i] = analyser[i]->get_voltage();
+        y[i] = analyser[i]->get_fit_param_0(3);
+    }
+
+    TCanvas* canvas = new TCanvas("canvas", "Slow comp", 800, 600);
+    TGraph* graph = new TGraph(n, e_field.data(), y.data());
+    graph->SetTitle("Slow comp;Slow comp [ns];Efield [kv_cm]");
+    graph->SetLineColor(kBlue);
+    graph->SetLineWidth(2);
+
+    graph->Draw("AL"); 
+
+    canvas->Update();
+    canvas->SaveAs(("./figures/slow_comp_ch" + std::to_string(ch) + ".png").c_str());
+
+    delete graph;
+    delete canvas;
+
+    gROOT->SetBatch(kFALSE);
+}
+
+void waveforms_Analyser::plot_all(const int ch)
 {
 
+    std::vector<waveform_Analyser *> matching_analyser = this->get_wf_Analyser_vector_by_ch(ch);
+    this->plot_slow_comp(matching_analyser);
+    
+}
+
+void waveforms_Analyser::fit_channel(const int ch, double *par, int n_par)
+{
     std::vector<waveform_Analyser *> matching_analyser = this->get_wf_Analyser_vector_by_ch(ch);
     int n = matching_analyser.size();
 

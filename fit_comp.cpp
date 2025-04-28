@@ -42,6 +42,7 @@ int main(int argc, char** argv)
     par[5] = -66;
 
     group_analyser->fit_channel(9,&par[0],6);
+    group_analyser->plot_all(9);
 
     //analyzer->fit_0(&par[0],6);
     //std::cout << "number of times that calculated the convolution: " << analyzer->cont_conv << std::endl; 

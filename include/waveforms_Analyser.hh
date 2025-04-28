@@ -26,6 +26,9 @@ class waveforms_Analyser
         std::vector<waveform_Analyser*> get_wf_Analyser_vector_by_ch(const int ch);
         std::vector<waveform_Analyser*> get_wf_Analyser_vector_by_voltage(const int voltage);
 
+
+        void plot_slow_comp(std::vector<waveform_Analyser*> analyser);
+        void plot_all(const int ch);
         void fit_channel(const int ch, double* par, int n_par);
 
 
