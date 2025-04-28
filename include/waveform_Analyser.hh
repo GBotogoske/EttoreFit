@@ -25,7 +25,7 @@ class waveform_Analyser
         std::vector <double> get_adcs();
 
         void set_template(const std::vector <double>& template_wf);
-        void set_template(const std::string template_file);
+        void set_template(const std::string template_file, bool negative = true);
         std::vector <double> get_template();
 
         void update();

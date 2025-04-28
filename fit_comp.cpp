@@ -16,15 +16,15 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-   TApplication app("app", &argc, argv); // Necessário para exibir o canvas
+    TApplication app("app", &argc, argv); // Necessário para exibir o canvas
 
-    string file_path = "/home/gabriel/Documents/protodune/waveforms/wf_ch9_0kV.txt";
+    /* string file_path = "/home/gabriel/Documents/protodune/waveforms/wf_ch9_0kV.txt";
     string template_path = "template/ch_25_endpoint_112_avg.txt";
 
     waveform_Analyser* analyzer = new waveform_Analyser(file_path);
     analyzer->set_template(template_path);
     analyzer->set_ch_and_voltage_file();
-
+    */
     //---------------------------------------------
     waveforms_Analyser* group_analyser = new waveforms_Analyser();
     group_analyser->set_folder("/home/gabriel/Documents/protodune/waveforms/");
@@ -36,21 +36,21 @@ int main(int argc, char** argv)
     std::vector<double> par(6,0.0);
     par[0] = -3;
     par[1] = -0.1;
-    par[2] = 10e-9;
-    par[3] = 1200e-9;
+    par[2] = 1e-9;
+    par[3] = 1500e-9;
     par[4] = 0;
-    par[5] = -66;
+    par[5] = -64;
 
-    group_analyser->fit_channel(9,&par[0],6);
-    group_analyser->plot_all(9);
+
+    group_analyser->fit_all_channels(20,&par[0],6);
+    group_analyser->plot_all_channels(20);
 
     //analyzer->fit_0(&par[0],6);
     //std::cout << "number of times that calculated the convolution: " << analyzer->cont_conv << std::endl; 
 
     app.Run();
 
-    delete analyzer;
+    delete group_analyser;
 
     return 0;
-
 }

@@ -28,10 +28,13 @@ class waveforms_Analyser
 
 
         void plot_slow_comp(std::vector<waveform_Analyser*> analyser);
+        void plot_fast_comp(std::vector<waveform_Analyser*> analyser);
+        void plot_slow_intensity(std::vector<waveform_Analyser*> analyser);
+        void plot_fast_intensity(std::vector<waveform_Analyser*> analyser);
         void plot_all(const int ch);
+        void plot_all_channels(const int n_ch);
         void fit_channel(const int ch, double* par, int n_par);
-
-
+        void fit_all_channels(const int n_ch,double* par, int n_par);
 
     private:
         std::vector<waveform_Analyser*> wf_Analyser_vector;

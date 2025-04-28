@@ -5,6 +5,10 @@
 #include "TCanvas.h"
 #include <TROOT.h> 
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
+
 #include <regex>
 
 #include "utils.hh"
@@ -70,7 +74,7 @@ void waveform_Analyser::set_template(const std::vector<double> &template_wf)
     this->my_template = template_wf;
 }
 
-void waveform_Analyser::set_template(const std::string template_file)
+void waveform_Analyser::set_template(const std::string template_file, bool negative)
 {
     this->my_template.clear();
     std::ifstream file(template_file);  
@@ -87,8 +91,14 @@ void waveform_Analyser::set_template(const std::string template_file)
     while (std::getline(file, line)) 
     {
         value = std::stod(line);
-        this->my_template.push_back(value);
-        
+        if(negative)
+        {
+            this->my_template.push_back(value);
+        }
+        else
+        {
+            this->my_template.push_back(-value);
+        }
     }
     file.close();
 }
@@ -229,9 +239,9 @@ void waveform_Analyser::fit_0(double *params, int n_params)
     }
     this->cont_conv = 0;
 
-    fitFunc->SetParLimits(0,-10000,-0.01);
-    fitFunc->SetParLimits(1,-10000,-0.01);
-    fitFunc->SetParLimits(2,0.5e-9,100e-9);
+    fitFunc->SetParLimits(0,-10000,-0.00001);
+    fitFunc->SetParLimits(1,-10000,-0.00001);
+    fitFunc->SetParLimits(2,0.1e-11,100e-9);
     fitFunc->SetParLimits(3,800e-9,2000e-9);
     fitFunc->SetParLimits(5,-80,-40);
     fitFunc->FixParameter(5,params[5]);
@@ -267,6 +277,15 @@ const std::vector<double> waveform_Analyser::get_fit_params_0()
 
 void waveform_Analyser::save_fig_fit()
 {
+    int ch = this->my_ch;
+    std::string folder_path = "figures/" + std::to_string(ch);
+
+    if (!fs::exists(folder_path)) 
+    {
+        fs::create_directory(folder_path);
+    }
+
+
     gROOT->SetBatch(kTRUE);
     auto waveform = this->get_adcs();
     auto waveform2 = this->get_ext_conv(); 
@@ -301,7 +320,7 @@ void waveform_Analyser::save_fig_fit()
     graph2->Draw("SAME"); 
 
     canvas->Update();
-    canvas->SaveAs(("./figures/waveform_fit_ch" + std::to_string(this->my_ch) + "_" + std::to_string(this->my_voltage) + "kV.png").c_str());
+    canvas->SaveAs(("./figures/" + std::to_string(this->my_ch) + "/waveform_fit_ch" + std::to_string(this->my_ch) + "_" + std::to_string(this->my_voltage) + "kV.png").c_str());
 
     delete graph;
     delete graph2;

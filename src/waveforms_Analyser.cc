@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "TGraph.h"
 #include "TCanvas.h"
+#include "TAxis.h"
 
 #include <TROOT.h> 
 
@@ -50,7 +51,7 @@ void waveforms_Analyser::update()
     {
         this->wf_Analyser_vector.push_back(new waveform_Analyser(matching_files[i]));
         this->wf_Analyser_vector[i]->set_ch_and_voltage_file();
-        this->wf_Analyser_vector[i]->set_template("template/ch_25_endpoint_112_avg.txt"); //mudar aqui depois
+        this->wf_Analyser_vector[i]->set_template("template/ch_25_endpoint_112_avg.txt",true); //mudar aqui depois
     }
     std::sort(this->wf_Analyser_vector.begin(), this->wf_Analyser_vector.end(), [this](waveform_Analyser* a, waveform_Analyser* b) {return this->compare_wf(*a, *b);});
     
@@ -133,19 +134,134 @@ void waveforms_Analyser::plot_slow_comp(std::vector<waveform_Analyser*> analyser
     for(int i=0; i<n ; i++)
     {
         e_field[i] = analyser[i]->get_voltage();
-        y[i] = analyser[i]->get_fit_param_0(3);
+        y[i] = analyser[i]->get_fit_param_0(3)/1e-9;
     }
 
     TCanvas* canvas = new TCanvas("canvas", "Slow comp", 800, 600);
     TGraph* graph = new TGraph(n, e_field.data(), y.data());
-    graph->SetTitle("Slow comp;Slow comp [ns];Efield [kv_cm]");
-    graph->SetLineColor(kBlue);
-    graph->SetLineWidth(2);
+    graph->SetTitle("Slow comp;Efield [kv_cm];Slow comp [ns]");
 
-    graph->Draw("AL"); 
+    graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
+    graph->GetYaxis()->SetRangeUser(0.98*(*std::min_element(y.begin(), y.end())), 1.02*(*std::max_element(y.begin(), y.end())));
 
+    graph->SetMarkerColor(kRed);
+    graph->SetMarkerStyle(kFullCircle);
+    graph->Draw("AP"); 
+
+    canvas->SetGrid();
     canvas->Update();
-    canvas->SaveAs(("./figures/slow_comp_ch" + std::to_string(ch) + ".png").c_str());
+    canvas->SaveAs(("./figures/" + std::to_string(ch) + "/slow_comp_ch" + std::to_string(ch) + ".png").c_str());
+
+    delete graph;
+    delete canvas;
+
+    gROOT->SetBatch(kFALSE);
+}
+
+void waveforms_Analyser::plot_fast_comp(std::vector<waveform_Analyser *> analyser)
+{
+    gROOT->SetBatch(kTRUE);
+
+    int n = analyser.size();
+    
+    std::vector<double> e_field(n);
+    std::vector<double> y(n);
+
+    auto ch=analyser[0]->get_ch();
+
+    for(int i=0; i<n ; i++)
+    {
+        e_field[i] = analyser[i]->get_voltage();
+        y[i] = analyser[i]->get_fit_param_0(2)/1e-9;
+    }
+
+    TCanvas* canvas = new TCanvas("canvas", "Fast comp", 800, 600);
+    TGraph* graph = new TGraph(n, e_field.data(), y.data());
+    graph->SetTitle("Fast comp;Efield [kv_cm];Fast comp [ns]");
+
+    graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));   
+    graph->GetYaxis()->SetRangeUser(0.9*(*std::min_element(y.begin(), y.end())), 1.1*(*std::max_element(y.begin(), y.end())));
+    graph->SetMarkerColor(kRed);
+    graph->SetMarkerStyle(kFullCircle);
+    graph->Draw("AP"); 
+
+    canvas->SetGrid();
+    canvas->Update();
+    canvas->SaveAs(("./figures/" + std::to_string(ch) + "/fast_comp_ch" + std::to_string(ch) + ".png").c_str());
+
+    delete graph;
+    delete canvas;
+
+    gROOT->SetBatch(kFALSE);
+}
+
+void waveforms_Analyser::plot_slow_intensity(std::vector<waveform_Analyser *> analyser)
+{
+    gROOT->SetBatch(kTRUE);
+
+    int n = analyser.size();
+    
+    std::vector<double> e_field(n);
+    std::vector<double> y(n);
+
+    auto ch=analyser[0]->get_ch();
+
+    for(int i=0; i<n ; i++)
+    {
+        e_field[i] = analyser[i]->get_voltage();
+        y[i] = -analyser[i]->get_fit_param_0(1);
+    }
+
+    TCanvas* canvas = new TCanvas("canvas", "Slow I", 800, 600);
+    TGraph* graph = new TGraph(n, e_field.data(), y.data());
+    graph->SetTitle("Slow intensity ; Efield [kv_cm] ; Slow intensity");
+
+    graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
+    graph->GetYaxis()->SetRangeUser(0.9*(*std::min_element(y.begin(), y.end())), 1.1*(*std::max_element(y.begin(), y.end())));
+    graph->SetMarkerColor(kRed);
+    graph->SetMarkerStyle(kFullCircle);
+    graph->Draw("AP"); 
+
+    canvas->SetGrid();
+    canvas->Update();
+    canvas->SaveAs(("./figures/" + std::to_string(ch) + "/slow_intensity_ch" + std::to_string(ch) + ".png").c_str());
+
+    delete graph;
+    delete canvas;
+
+    gROOT->SetBatch(kFALSE);
+}
+
+void waveforms_Analyser::plot_fast_intensity(std::vector<waveform_Analyser *> analyser)
+{
+    gROOT->SetBatch(kTRUE);
+
+    int n = analyser.size();
+    
+    std::vector<double> e_field(n);
+    std::vector<double> y(n);
+
+    auto ch=analyser[0]->get_ch();
+
+    for(int i=0; i<n ; i++)
+    {
+        e_field[i] = analyser[i]->get_voltage();
+        y[i] = -analyser[i]->get_fit_param_0(0);
+    }
+
+    TCanvas* canvas = new TCanvas("canvas", "Fast I", 800, 600);
+    TGraph* graph = new TGraph(n, e_field.data(), y.data());
+    graph->SetTitle("Fast intensity ; Efield [kv_cm] ; Fast intensity ");
+   
+    graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end())); 
+    graph->GetYaxis()->SetRangeUser(0.9*(*std::min_element(y.begin(), y.end())), 1.1*(*std::max_element(y.begin(), y.end())));
+    graph->SetMarkerColor(kRed);
+    graph->SetMarkerStyle(kFullCircle);
+    graph->Draw("AP"); 
+
+    canvas->SetGrid();
+    canvas->Update();
+    canvas->SaveAs(("./figures/" + std::to_string(ch) + "/fast_intensity_ch" + std::to_string(ch) + ".png").c_str());
 
     delete graph;
     delete canvas;
@@ -156,9 +272,27 @@ void waveforms_Analyser::plot_slow_comp(std::vector<waveform_Analyser*> analyser
 void waveforms_Analyser::plot_all(const int ch)
 {
 
+    std::string folder_path = "figures/" + std::to_string(ch);
+
+    if (!fs::exists(folder_path)) 
+    {
+        fs::create_directory(folder_path);
+    }
+
     std::vector<waveform_Analyser *> matching_analyser = this->get_wf_Analyser_vector_by_ch(ch);
     this->plot_slow_comp(matching_analyser);
+    this->plot_fast_comp(matching_analyser);
+    this->plot_slow_intensity(matching_analyser);
+    this->plot_fast_intensity(matching_analyser);
     
+}
+
+void waveforms_Analyser::plot_all_channels(const int n_ch)
+{
+    for(int i=0; i < n_ch ; i++)
+    {
+        this->plot_all(i);
+    }
 }
 
 void waveforms_Analyser::fit_channel(const int ch, double *par, int n_par)
@@ -170,6 +304,14 @@ void waveforms_Analyser::fit_channel(const int ch, double *par, int n_par)
     {
         matching_analyser[i]->fit_0(par,n_par);
         matching_analyser[i]->save_fig_fit();
+    }
+}
+
+void waveforms_Analyser::fit_all_channels(const int n_ch, double *par, int n_par)
+{
+    for(int i=0; i < n_ch ; i++)
+    {
+        this->fit_channel(i,par,n_par);
     }
 }
 
