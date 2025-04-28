@@ -1,0 +1,154 @@
+#include "waveforms_Analyser.hh"
+
+#include <algorithm>
+
+namespace fs = std::filesystem;
+
+
+waveforms_Analyser::waveforms_Analyser() : my_prefix("wf_ch"), my_suffix(".txt") 
+{
+    this->clear();
+}
+
+waveforms_Analyser::~waveforms_Analyser()
+{
+}
+
+std::string waveforms_Analyser::get_folder()
+{
+    return this->my_folder_path;
+}
+
+void waveforms_Analyser::set_folder(const std::string folder_path)
+{
+    this->my_folder_path = folder_path;
+}
+
+void waveforms_Analyser::update()
+{
+    std::vector<std::string> matching_files;
+
+    for (const auto& entry : fs::directory_iterator(this->my_folder_path))
+    {
+        if (entry.is_regular_file()) 
+        {
+            std::string filename = entry.path().filename().string();
+            if (this->starts_with(filename,this->my_prefix) && this->ends_with(filename,this->my_suffix)) 
+            {
+                matching_files.push_back(entry.path().string());  
+            }
+        }
+    }
+
+    this->wf_Analyser_vector.clear();
+    for (int i = 0 ; i < matching_files.size(); i++)
+    {
+        this->wf_Analyser_vector.push_back(new waveform_Analyser(matching_files[i]));
+        this->wf_Analyser_vector[i]->set_ch_and_voltage_file();
+        this->wf_Analyser_vector[i]->set_template("template/ch_25_endpoint_112_avg.txt"); //mudar aqui depois
+    }
+    std::sort(this->wf_Analyser_vector.begin(), this->wf_Analyser_vector.end(), [this](waveform_Analyser* a, waveform_Analyser* b) {return this->compare_wf(*a, *b);});
+    
+}
+
+void waveforms_Analyser::clear()
+{
+    this->my_folder_path = "";
+    this->wf_Analyser_vector.clear();
+}
+
+std::string waveforms_Analyser::get_suffix()
+{
+    return this->my_suffix;
+}
+
+std::string waveforms_Analyser::get_prefix()
+{
+    return this->my_prefix;
+}
+
+void waveforms_Analyser::set_suffix(const std::string suffix)
+{
+    this->my_suffix = suffix;
+}
+
+void waveforms_Analyser::set_prefix(const std::string prefix)
+{
+    this->my_prefix = prefix;
+}
+
+std::vector<waveform_Analyser *> waveforms_Analyser::get_wf_Analyser_vector()
+{
+    return this->wf_Analyser_vector;
+}
+
+std::vector<waveform_Analyser *> waveforms_Analyser::get_wf_Analyser_vector_by_ch(const int ch)
+{
+    std::vector<waveform_Analyser *> matching_analyser;
+    int n = this->wf_Analyser_vector.size();
+
+    for(int i=0;i<n;i++)
+    {
+        if(this->wf_Analyser_vector[i]->get_ch() == ch )
+        {
+            matching_analyser.push_back(this->wf_Analyser_vector[i]);
+        }
+    }
+
+    return matching_analyser;
+}
+
+std::vector<waveform_Analyser *> waveforms_Analyser::get_wf_Analyser_vector_by_voltage(const int voltage)
+{
+    std::vector<waveform_Analyser *> matching_analyser;
+    int n = this->wf_Analyser_vector.size();
+
+    for(int i=0;i<n;i++)
+    {
+        if(this->wf_Analyser_vector[i]->get_voltage() == voltage )
+        {
+            matching_analyser.push_back(this->wf_Analyser_vector[i]);
+        }
+    }
+
+    return matching_analyser;
+}
+
+void waveforms_Analyser::fit_channel(const int ch, double* par, int n_par)
+{
+
+    std::vector<waveform_Analyser *> matching_analyser = this->get_wf_Analyser_vector_by_ch(ch);
+    int n = matching_analyser.size();
+
+    for(int i=0; i<n ; i++)
+    {
+        matching_analyser[i]->fit_0(par,n_par);
+        matching_analyser[i]->save_fig_fit();
+    }
+}
+
+bool waveforms_Analyser::starts_with(const std::string &str, const std::string &prefix)
+{
+    return str.substr(0, prefix.length()) == prefix;
+}
+
+bool waveforms_Analyser::ends_with(const std::string &str, const std::string &suffix)
+{
+    if (str.length() < suffix.length()) 
+    {
+        return false;
+    }
+    return str.substr(str.length() - suffix.length()) == suffix;
+}
+
+bool waveforms_Analyser::compare_wf(waveform_Analyser& wf1, waveform_Analyser& wf2)
+{
+    auto a = wf1.get_ch();
+    auto b = wf2.get_ch();
+    auto a_v = wf1.get_voltage();
+    auto b_v = wf2.get_voltage();
+    if (a != b)
+        return a < b; // ordena por canal
+    else
+        return a_v < b_v;
+}
