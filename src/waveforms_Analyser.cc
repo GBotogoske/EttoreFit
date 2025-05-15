@@ -209,49 +209,57 @@ void waveforms_Analyser::plot_slow_comp_avg(std::vector<int> list_ch)
         vector.push_back(this->get_slow_comp_vector(this_ch));
     }
 
-    std::size_t n = vector.size();
-    std::size_t dim = vector[0].size();
+    std::size_t n = vector.size(); //number of channels
+    std::size_t dim = vector[0].size(); //nummber of voltage
     std::vector<double> mean(dim, 0.0);
     std::vector<double> stddev(dim, 0.0);
 
    
-    for (const std::vector<double>& this_vector : vector) {
-        for (std::size_t i = 0; i < dim; ++i) {
+    for (const std::vector<double>& this_vector : vector) 
+    {
+        for (std::size_t i = 0; i < dim; ++i) 
+        {
             mean[i] += this_vector[i];
         }
     }
-    for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t i = 0; i < dim; ++i)
+    {
         mean[i] /= n;
     }
 
     // Calcula o desvio padrão
-    for (const std::vector<double>& this_vector : vector) {
-        for (std::size_t i = 0; i < dim; ++i) {
+    for (const std::vector<double>& this_vector : vector) 
+    {
+        for (std::size_t i = 0; i < dim; ++i)
+        {
             double diff = this_vector[i] - mean[i];
             stddev[i] += diff * diff;
         }
     }
-    for (std::size_t i = 0; i < dim; ++i) {
+    for (std::size_t i = 0; i < dim; ++i)
+    {
         stddev[i] = std::sqrt(stddev[i] / n); // para amostral: dividir por (n - 1)
     }
   
-    std::vector<double> e_field(dim);
+   
     auto aux_analyser = this->get_wf_Analyser_vector_by_ch(list_ch[0]);
+    std::vector<double> e_field(dim);
     for(int i=0; i<dim ; i++)
     {
         e_field[i] = aux_analyser[i]->get_voltage();  
     }
 
-    std::vector<double> ex(n, 0.0);     
+    std::vector<double> ex(dim, 0.0);     
 
     gROOT->SetBatch(kTRUE);
     TCanvas* canvas = new TCanvas("canvas", "Slow comp Avg", 800, 600);
-    TGraphErrors* graph = new TGraphErrors(n, e_field.data(), mean.data(), ex.data(), stddev.data());
-    graph->SetTitle("Slow comp;Efield [kv_cm];Slow comp [ns]");
+    TGraphErrors* graph = new TGraphErrors(dim, e_field.data(), mean.data(), ex.data(), stddev.data());
+    graph->SetTitle("Slow comp; Efield [kv_cm]; Slow comp [ns]");
 
     graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
     double y_min = 1e9, y_max = -1e9;
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; ++i)
+    {
         double y1 = mean[i] - stddev[i];
         double y2 = mean[i] + stddev[i];
         if (y1 < y_min) y_min = y1;
@@ -309,19 +317,19 @@ void waveforms_Analyser::plot_fast_comp_avg(std::vector<int> list_ch)
         stddev[i] = std::sqrt(stddev[i] / n); // para amostral: dividir por (n - 1)
     }
   
-    std::vector<double> e_field(dim);
     auto aux_analyser = this->get_wf_Analyser_vector_by_ch(list_ch[0]);
+    std::vector<double> e_field(dim);
     for(int i=0; i<dim ; i++)
     {
         e_field[i] = aux_analyser[i]->get_voltage();  
     }
 
-    std::vector<double> ex(n, 0.0);     
+    std::vector<double> ex(dim, 0.0);     
 
     gROOT->SetBatch(kTRUE);
-    TCanvas* canvas = new TCanvas("canvas", "Fast comp Avg", 800, 600);
-    TGraphErrors* graph = new TGraphErrors(n, e_field.data(), mean.data(), ex.data(), stddev.data());
-    graph->SetTitle("Slow comp;Efield [kv_cm];Fast comp [ns]");
+    TCanvas* canvas = new TCanvas("canvas", "Fast Comp Average", 800, 600);
+    TGraphErrors* graph = new TGraphErrors(dim, e_field.data(), mean.data(), ex.data(), stddev.data());
+    graph->SetTitle("Fast comp;Efield [kv_cm];Fast comp [ns]");
 
     graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
     double y_min = 1e9, y_max = -1e9;
@@ -383,18 +391,18 @@ void waveforms_Analyser::plot_slow_int_avg(std::vector<int> list_ch)
         stddev[i] = std::sqrt(stddev[i] / n); // para amostral: dividir por (n - 1)
     }
   
-    std::vector<double> e_field(dim);
     auto aux_analyser = this->get_wf_Analyser_vector_by_ch(list_ch[0]);
+    std::vector<double> e_field(dim);
     for(int i=0; i<dim ; i++)
     {
         e_field[i] = aux_analyser[i]->get_voltage();  
     }
 
-    std::vector<double> ex(n, 0.0);     
+    std::vector<double> ex(dim, 0.0);   
 
     gROOT->SetBatch(kTRUE);
     TCanvas* canvas = new TCanvas("canvas", "Slow Intensity Avg", 800, 600);
-    TGraphErrors* graph = new TGraphErrors(n, e_field.data(), mean.data(), ex.data(), stddev.data());
+    TGraphErrors* graph = new TGraphErrors(dim, e_field.data(), mean.data(), ex.data(), stddev.data());
     graph->SetTitle("Slow intensity;Efield [kv_cm];Slow Intensity [A.U.]");
 
     graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
@@ -456,18 +464,18 @@ void waveforms_Analyser::plot_fast_int_avg(std::vector<int> list_ch)
         stddev[i] = std::sqrt(stddev[i] / n); // para amostral: dividir por (n - 1)
     }
   
-    std::vector<double> e_field(dim);
     auto aux_analyser = this->get_wf_Analyser_vector_by_ch(list_ch[0]);
+    std::vector<double> e_field(dim);
     for(int i=0; i<dim ; i++)
     {
         e_field[i] = aux_analyser[i]->get_voltage();  
     }
 
-    std::vector<double> ex(n, 0.0);     
+    std::vector<double> ex(dim, 0.0);     
 
     gROOT->SetBatch(kTRUE);
     TCanvas* canvas = new TCanvas("canvas", "Fast intensity Avg", 800, 600);
-    TGraphErrors* graph = new TGraphErrors(n, e_field.data(), mean.data(), ex.data(), stddev.data());
+    TGraphErrors* graph = new TGraphErrors(dim, e_field.data(), mean.data(), ex.data(), stddev.data());
     graph->SetTitle("Fast Int;Efield [kv_cm];Fast Int [A.U.]");
 
     graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
