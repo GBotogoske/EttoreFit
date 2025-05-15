@@ -47,6 +47,8 @@ class waveform_Analyser
         double get_sampling_time();
 
         void fit_0(double *params, int n_params); // do the fit using the ext conv
+        void fit_0_discrete_p5_scan(double *params, int n_params);
+
         const double get_fit_param_0(const int i);
         const std::vector<double> get_fit_params_0();
 

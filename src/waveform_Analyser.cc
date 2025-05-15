@@ -239,12 +239,14 @@ void waveform_Analyser::fit_0(double *params, int n_params)
     }
     this->cont_conv = 0;
 
-    fitFunc->SetParLimits(0,-10000,-0.00001);
-    fitFunc->SetParLimits(1,-10000,-0.00001);
+    fitFunc->SetParLimits(0,-10000,1);
+    fitFunc->SetParLimits(1,-10000,1);
     fitFunc->SetParLimits(2,0.1e-11,100e-9);
     fitFunc->SetParLimits(3,800e-9,2000e-9);
-    fitFunc->SetParLimits(5,-80,-40);
-    fitFunc->FixParameter(5,params[5]);
+    fitFunc->SetParLimits(4,-1,1);
+    fitFunc->SetParLimits(5,-80,80);
+    //fitFunc->FixParameter(5,params[5]);
+    //fitFunc->FixParameter(4,params[4]);
 
     graph->Fit(fitFunc, "0R+"); 
 
@@ -376,12 +378,14 @@ double waveform_Analyser::fit_0_function(double *x, double *par)
     int param_size = this->my_fit_params_0.size();
 
     bool recompute = false;
+    int plus=0;
     for (int i = 0; i < param_size; i++) 
     {
         if (par[i] != this->my_fit_params_0[i]) 
         {
             this->my_fit_params_0[i] = par[i];
             recompute = true;
+            
         }
     }
 
@@ -393,9 +397,11 @@ double waveform_Analyser::fit_0_function(double *x, double *par)
         double tau1 = par[2];
         double tau2 = par[3];
         double c = par[4];
-        int roll_factor = (int) par[5];
+        double roll_factor = par[5];
+        //int roll_factor =  static_cast<int>(std::round(par[5]));
         auto s = this->LAr_Profile(n, this->my_sampling_time, A1, A2, tau1, tau2 , c);
-        this->ext_conv( s , this->my_template , -1 , roll_factor );
+        this->ext_conv( s , this->my_template , -1 , 0 );
+        this->my_ext_convolution = shift_waveform_continuous(this->my_ext_convolution, roll_factor);
         this->my_ext_convolution = std::vector(this->my_ext_convolution.begin(), this->my_ext_convolution.begin() + 1024);
     } 
 
@@ -408,4 +414,79 @@ double waveform_Analyser::fit_0_function(double *x, double *par)
     {
         return 0.0;
     }
+}
+
+void waveform_Analyser::fit_0_discrete_p5_scan(double *params, int n_params)
+{
+    int size = my_adcs.size();
+
+    int n_bins_fit = std::min(size, 1024);
+
+    double* y_array = &this->my_adcs[0];
+
+
+    std::vector<double> time(size);
+    for(int i = 0 ; i < size ; i++) {
+        time[i] = i;
+    }
+    double* x_array = &time[0];
+
+    TGraph *graph = new TGraph(size, x_array, y_array);
+
+    std::vector<double> best_params(n_params, 0.0);
+    double best_chi2 = 1e9;
+    int best_p5 = -1;
+
+    // Escanear valores de p5 (roll_factor) no intervalo desejado
+    for (int p5 = 55; p5 <= 62; ++p5)
+    {
+        this->my_fit_params_0 = std::vector<double>(n_params, 0.0);
+        
+        for(int i = 0; i< n_params ; i++) {
+            this->my_fit_params_0[i] = params[i] ;
+        }
+        
+        this->my_fit_params_0[5]=p5;
+        params[5] = p5;
+
+        TF1 *fitFunc = new TF1("fitFunc_conv", [this](double* x, double* par) { 
+            return this->fit_0_function(x, par); 
+        }, 0, n_bins_fit, n_params);
+
+        // Setar parâmetros iniciais
+        for (int i = 0; i < n_params; ++i) {
+            fitFunc->SetParameter(i, params[i]);
+        }
+
+        // Fixar p5
+        fitFunc->FixParameter(5, p5);
+
+        // Ajustar limites dos outros parâmetros, se quiser
+        fitFunc->SetParLimits(0,-200,200);
+        fitFunc->SetParLimits(1,-200,200);
+
+        fitFunc->SetParLimits(2,0,2000e-9);
+        fitFunc->SetParLimits(3,0,2000e-9);
+
+        this->cont_conv = 0;
+
+        // Ajustar silenciosamente
+        graph->Fit(fitFunc, "0R+");
+
+        double chi2 = fitFunc->GetChisquare();
+        if (chi2 < best_chi2) {
+            best_chi2 = chi2;
+            best_p5 = p5;
+            for (int i = 0; i < n_params; ++i) {
+                best_params[i] = fitFunc->GetParameter(i);
+            }
+        }
+
+        delete fitFunc;
+    }
+
+    // Armazenar o melhor resultado
+    this->my_fit_params_0 = best_params;
+
+    std::cout << "Best p5 (roll_factor): " << best_p5 << " with Chi2 = " << best_chi2 << std::endl;
 }

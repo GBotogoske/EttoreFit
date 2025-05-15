@@ -14,6 +14,7 @@ class waveforms_Analyser
         ~waveforms_Analyser();
         std::string get_folder();
         void set_folder(const std::string folder_path);
+        void set_template_file(const std::string folder_path);
         void update();
         void clear();
 
@@ -26,7 +27,18 @@ class waveforms_Analyser
         std::vector<waveform_Analyser*> get_wf_Analyser_vector_by_ch(const int ch);
         std::vector<waveform_Analyser*> get_wf_Analyser_vector_by_voltage(const int voltage);
 
+        std::vector<double> get_par_fit_ch(const int ch, const int par);
+        std::vector<double> get_slow_comp_vector(const int ch);
+        std::vector<double> get_fast_comp_vector(const int ch);
+        std::vector<double> get_slow_int_vector(const int ch);
+        std::vector<double> get_fast_int_vector(const int ch);
 
+
+        void plot_slow_comp_avg(std::vector<int> list_ch);
+        void plot_fast_comp_avg(std::vector<int> list_ch);
+        void plot_slow_int_avg(std::vector<int> list_ch);
+        void plot_fast_int_avg(std::vector<int> list_ch);
+        void plot_all_avg(std::vector<int> list_ch);
         void plot_slow_comp(std::vector<waveform_Analyser*> analyser);
         void plot_fast_comp(std::vector<waveform_Analyser*> analyser);
         void plot_slow_intensity(std::vector<waveform_Analyser*> analyser);
@@ -39,6 +51,7 @@ class waveforms_Analyser
     private:
         std::vector<waveform_Analyser*> wf_Analyser_vector;
         std::string my_folder_path;
+        std::string my_template_path;
 
         std::string my_prefix;
         std::string my_suffix;
