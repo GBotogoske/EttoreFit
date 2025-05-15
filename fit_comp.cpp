@@ -35,47 +35,22 @@ int main(int argc, char** argv)
  
     //vamos testar o FIT
     std::vector<double> par(6,0.0);
-    par[0] = -1;
+    par[0] = -3;
     par[1] = -0.1;
-    par[2] = 100e-9;
-    par[3] = 1500e-9;
+    par[2] = 50e-9;
+    par[3] = 1600e-9;
     par[4] = 0;
-    par[5] = -60;
-
+    par[5] = -57;
 
     group_analyser->fit_all_channels(20,&par[0],6);
 
-
    std::vector<int> list_ch;
-   list_ch.push_back(0);
-   list_ch.push_back(1);
-   list_ch.push_back(8);
-   list_ch.push_back(9);
-   list_ch.push_back(10);
-   list_ch.push_back(11);
-   list_ch.push_back(18);
-   list_ch.push_back(19);
+   for(int i=0;i<20;i++)
+   {
+      list_ch.push_back(i);   
+   }
    
-
    group_analyser->plot_all_avg(list_ch);
-    //group_analyser->plot_all_channels(20);
-
-  /*   group_analyser->fit_channel(9,&par[0],6);
-    group_analyser->plot_all(9);
- *//* 
-    par[0] = -30;
-    par[1] = -1;
-    par[2] = 1e-9;
-    par[3] = 1500e-9;
-    par[4] = 0;
-    par[5] = 55;
- */
-    //group_analyser->fit_channel(9,&par[0],6);
-    //group_analyser->plot_all(9);
-    
-
-    //analyzer->fit_0(&par[0],6);
-    //std::cout << "number of times that calculated the convolution: " << analyzer->cont_conv << std::endl; 
 
     app.Run();
 

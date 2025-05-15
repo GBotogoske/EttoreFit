@@ -245,6 +245,14 @@ void waveform_Analyser::fit_0(double *params, int n_params)
     fitFunc->SetParLimits(3,800e-9,2000e-9);
     fitFunc->SetParLimits(4,-1,1);
     fitFunc->SetParLimits(5,-80,80);
+
+    fitFunc->SetParName(0,"A1");
+    fitFunc->SetParName(1,"A2");
+    fitFunc->SetParName(2,"tau1");
+    fitFunc->SetParName(3,"tau2");
+    fitFunc->SetParName(4,"baseline");
+    fitFunc->SetParName(5,"roll factor");
+
     //fitFunc->FixParameter(5,params[5]);
     //fitFunc->FixParameter(4,params[4]);
 
