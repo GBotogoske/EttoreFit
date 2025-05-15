@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     //---------------------------------------------
     waveforms_Analyser* group_analyser = new waveforms_Analyser();
     group_analyser->set_folder("/home/gabriel/Documents/protodune/waveforms/");
-    group_analyser->set_template_file("/home/gabriel/Documents/protodune/efield/template_list.txt");
+    group_analyser->set_template_file("/template_list.txt");
     group_analyser->update();  
 
     //---------------------------------------------
