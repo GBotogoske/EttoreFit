@@ -265,8 +265,9 @@ void waveforms_Analyser::plot_slow_comp_avg(std::vector<int> list_ch)
         if (y1 < y_min) y_min = y1;
         if (y2 > y_max) y_max = y2;
     }
-    graph->GetYaxis()->SetRangeUser(y_min - 0.05 * std::abs(y_min), y_max + 0.05 * std::abs(y_max));
-    
+   //graph->GetYaxis()->SetRangeUser(y_min , y_max );
+
+
     graph->SetMarkerColor(kRed);
     graph->SetMarkerStyle(kFullCircle);
     graph->Draw("AP"); 
@@ -339,7 +340,8 @@ void waveforms_Analyser::plot_fast_comp_avg(std::vector<int> list_ch)
         if (y1 < y_min) y_min = y1;
         if (y2 > y_max) y_max = y2;
     }
-    graph->GetYaxis()->SetRangeUser(y_min - 0.05 * std::abs(y_min), y_max + 0.05 * std::abs(y_max));
+   //graph->GetYaxis()->SetRangeUser(y_min , y_max );
+
     
 
     graph->SetMarkerColor(kRed);
@@ -413,7 +415,8 @@ void waveforms_Analyser::plot_slow_int_avg(std::vector<int> list_ch)
         if (y1 < y_min) y_min = y1;
         if (y2 > y_max) y_max = y2;
     }
-    graph->GetYaxis()->SetRangeUser(y_min - 0.05 * std::abs(y_min), y_max + 0.05 * std::abs(y_max));
+   //graph->GetYaxis()->SetRangeUser(y_min , y_max );
+
     
     graph->SetMarkerColor(kRed);
     graph->SetMarkerStyle(kFullCircle);
@@ -486,7 +489,8 @@ void waveforms_Analyser::plot_fast_int_avg(std::vector<int> list_ch)
         if (y1 < y_min) y_min = y1;
         if (y2 > y_max) y_max = y2;
     }
-    graph->GetYaxis()->SetRangeUser(y_min - 0.05 * std::abs(y_min), y_max + 0.05 * std::abs(y_max));
+   //graph->GetYaxis()->SetRangeUser(y_min , y_max );
+
     
     graph->SetMarkerColor(kRed);
     graph->SetMarkerStyle(kFullCircle);
@@ -508,7 +512,7 @@ void waveforms_Analyser::plot_all_avg(std::vector<int> list_ch)
     this->plot_slow_comp_avg(list_ch);
     this->plot_fast_comp_avg(list_ch);
     this->plot_slow_int_avg(list_ch);
-    this->plot_slow_comp_avg(list_ch);
+    this->plot_fast_int_avg(list_ch);
 }
 
 void waveforms_Analyser::plot_slow_comp(std::vector<waveform_Analyser *> analyser)
