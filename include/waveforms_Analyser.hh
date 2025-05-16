@@ -32,6 +32,7 @@ class waveforms_Analyser
         std::vector<double> get_fast_comp_vector(const int ch);
         std::vector<double> get_slow_int_vector(const int ch);
         std::vector<double> get_fast_int_vector(const int ch);
+        std::vector<double> get_ly_vector(const int ch);
 
 
         void plot_slow_comp_avg(std::vector<int> list_ch);
@@ -49,6 +50,7 @@ class waveforms_Analyser
         void fit_all_channels(const int n_ch,double* par, int n_par);
 
         void plot_ly_ch(const int ch);
+        void plot_ly_avg(std::vector<int> list_ch);
 
     private:
         std::vector<waveform_Analyser*> wf_Analyser_vector;

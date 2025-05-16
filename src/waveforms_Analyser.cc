@@ -201,6 +201,28 @@ std::vector<double> waveforms_Analyser::get_fast_int_vector(const int ch)
     return y;
 }
 
+std::vector<double> waveforms_Analyser::get_ly_vector(const int ch)
+{
+    std::vector<waveform_Analyser *> matching_analyser = this->get_wf_Analyser_vector_by_ch(ch);
+
+    std::vector <double> y;
+
+    for(waveform_Analyser* my_analyser: matching_analyser)
+    {   
+        y.push_back(my_analyser->calc_light_yield());
+    }
+
+    int n = y.size();
+
+    double norm=y[0];
+    for(int i=0;i<n;i++)
+    {
+        y[i]=y[i]/norm;
+    }
+
+    return y;
+}
+
 void waveforms_Analyser::plot_slow_comp_avg(std::vector<int> list_ch)
 {
     std::vector<std::vector<double>> vector;
@@ -280,8 +302,6 @@ void waveforms_Analyser::plot_slow_comp_avg(std::vector<int> list_ch)
     delete canvas;
 
     gROOT->SetBatch(kFALSE);
-
-
 }
 
 void waveforms_Analyser::plot_fast_comp_avg(std::vector<int> list_ch)
@@ -513,6 +533,7 @@ void waveforms_Analyser::plot_all_avg(std::vector<int> list_ch)
     this->plot_fast_comp_avg(list_ch);
     this->plot_slow_int_avg(list_ch);
     this->plot_fast_int_avg(list_ch);
+    this->plot_ly_avg(list_ch);
 }
 
 void waveforms_Analyser::plot_slow_comp(std::vector<waveform_Analyser *> analyser)
@@ -752,6 +773,87 @@ void waveforms_Analyser::plot_ly_ch(const int ch)
     canvas->SetGrid();
     canvas->Update();
     canvas->SaveAs(("./figures/" + std::to_string(ch) + "/ly_ch" + std::to_string(ch) + ".png").c_str());
+
+    delete graph;
+    delete canvas;
+
+    gROOT->SetBatch(kFALSE);
+}
+
+void waveforms_Analyser::plot_ly_avg(std::vector<int> list_ch)
+{
+    std::vector<std::vector<double>> vector;
+    for(const int& this_ch : list_ch)
+    {
+        vector.push_back(this->get_ly_vector(this_ch));
+    }
+
+    std::size_t n = vector.size(); //number of channels
+    std::size_t dim = vector[0].size(); //nummber of voltage
+    std::vector<double> mean(dim, 0.0);
+    std::vector<double> stddev(dim, 0.0);
+
+   
+    for (const std::vector<double>& this_vector : vector) 
+    {
+        for (std::size_t i = 0; i < dim; ++i) 
+        {
+            mean[i] += this_vector[i];
+        }
+    }
+    for (std::size_t i = 0; i < dim; ++i)
+    {
+        mean[i] /= n;
+    }
+
+    // Calcula o desvio padrão
+    for (const std::vector<double>& this_vector : vector) 
+    {
+        for (std::size_t i = 0; i < dim; ++i)
+        {
+            double diff = this_vector[i] - mean[i];
+            stddev[i] += diff * diff;
+        }
+    }
+    for (std::size_t i = 0; i < dim; ++i)
+    {
+        stddev[i] = std::sqrt(stddev[i] / n); // para amostral: dividir por (n - 1)
+    }
+  
+   
+    auto aux_analyser = this->get_wf_Analyser_vector_by_ch(list_ch[0]);
+    std::vector<double> e_field(dim);
+    for(int i=0; i<dim ; i++)
+    {
+        e_field[i] = aux_analyser[i]->get_voltage();  
+    }
+
+    std::vector<double> ex(dim, 0.0);     
+
+    gROOT->SetBatch(kTRUE);
+    TCanvas* canvas = new TCanvas("canvas", "LY", 800, 600);
+    TGraphErrors* graph = new TGraphErrors(dim, e_field.data(), mean.data(), ex.data(), stddev.data());
+    graph->SetTitle("LY; Efield [kv_cm]; Light Yield");
+
+    graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end()));  
+    double y_min = 1e9, y_max = -1e9;
+    for (int i = 0; i < n; ++i)
+    {
+        double y1 = mean[i] - stddev[i];
+        double y2 = mean[i] + stddev[i];
+        if (y1 < y_min) y_min = y1;
+        if (y2 > y_max) y_max = y2;
+    }
+   //graph->GetYaxis()->SetRangeUser(y_min , y_max );
+
+
+    graph->SetMarkerColor(kRed);
+    graph->SetMarkerStyle(kFullCircle);
+    graph->Draw("AP"); 
+
+    canvas->SetGrid();
+    canvas->Update();
+    canvas->SaveAs(std::string("./figures/avg/ly.png").c_str()); 
 
     delete graph;
     delete canvas;
