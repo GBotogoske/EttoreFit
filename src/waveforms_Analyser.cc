@@ -721,20 +721,23 @@ void waveforms_Analyser::plot_ly_ch(const int ch)
     std::vector <double> y;
     std::vector <double> e_field;
 
+    int j=0;
     for(waveform_Analyser* my_analyser: matching_analyser)
     {   
         y.push_back(my_analyser->calc_light_yield());
         e_field.push_back(my_analyser->get_voltage());
+        std::cout <<  y[j] << " --- " << e_field[j] << std::endl;
+        j++;
     }
 
     gROOT->SetBatch(kTRUE);
     int n = e_field.size();
 
+    double norm=y[0];
     for(int i=0;i<n;i++)
     {
-        y[i]=y[i]/y[0];
+        y[i]=y[i]/norm;
     }
-
 
     TCanvas* canvas = new TCanvas("canvas", "LY", 800, 600);
     TGraph* graph = new TGraph(n, e_field.data(), y.data());
