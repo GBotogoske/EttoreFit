@@ -285,6 +285,16 @@ const std::vector<double> waveform_Analyser::get_fit_params_0()
     return this->my_fit_params_0;
 }
 
+const double waveform_Analyser::calc_light_yield()
+{
+    double A1=-get_fit_param_0(0);
+    double A2=-get_fit_param_0(1);
+    double tau1 = get_fit_param_0(2)/1e-9;
+    double tau2 = get_fit_param_0(3)/1e-9;
+
+    return A1*tau1+A2*tau2;
+}
+
 void waveform_Analyser::save_fig_fit()
 {
     int ch = this->my_ch;

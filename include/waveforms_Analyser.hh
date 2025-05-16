@@ -48,6 +48,8 @@ class waveforms_Analyser
         void fit_channel(const int ch, double* par, int n_par);
         void fit_all_channels(const int n_ch,double* par, int n_par);
 
+        void plot_ly_ch(const int ch);
+
     private:
         std::vector<waveform_Analyser*> wf_Analyser_vector;
         std::string my_folder_path;

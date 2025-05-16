@@ -45,11 +45,24 @@ int main(int argc, char** argv)
     group_analyser->fit_all_channels(20,&par[0],6);
 
    std::vector<int> list_ch;
-   for(int i=0;i<20;i++)
+   /* for(int i=0;i<20;i++)
    {
       list_ch.push_back(i);   
-   }
+   } */
    
+   list_ch.push_back(0);
+   list_ch.push_back(1);
+   list_ch.push_back(2);
+   list_ch.push_back(7);
+   list_ch.push_back(8);
+   list_ch.push_back(9);
+   list_ch.push_back(10);
+   list_ch.push_back(11);
+   list_ch.push_back(12);
+   list_ch.push_back(17);
+   list_ch.push_back(18);
+   list_ch.push_back(19);
+
    group_analyser->plot_all_avg(list_ch);
 
     app.Run();

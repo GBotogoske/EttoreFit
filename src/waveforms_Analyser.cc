@@ -681,6 +681,7 @@ void waveforms_Analyser::plot_all(const int ch)
     this->plot_fast_comp(matching_analyser);
     this->plot_slow_intensity(matching_analyser);
     this->plot_fast_intensity(matching_analyser);
+    this->plot_ly_ch(ch);
     
 }
 
@@ -711,6 +712,48 @@ void waveforms_Analyser::fit_all_channels(const int n_ch, double *par, int n_par
         this->fit_channel(i,par,n_par);
         this->plot_all(i);
     }
+}
+
+void waveforms_Analyser::plot_ly_ch(const int ch)
+{
+    std::vector<waveform_Analyser *> matching_analyser = this->get_wf_Analyser_vector_by_ch(ch);
+
+    std::vector <double> y;
+    std::vector <double> e_field;
+
+    for(waveform_Analyser* my_analyser: matching_analyser)
+    {   
+        y.push_back(my_analyser->calc_light_yield());
+        e_field.push_back(my_analyser->get_voltage());
+    }
+
+    gROOT->SetBatch(kTRUE);
+    int n = e_field.size();
+
+    for(int i=0;i<n;i++)
+    {
+        y[i]=y[i]/y[0];
+    }
+
+
+    TCanvas* canvas = new TCanvas("canvas", "LY", 800, 600);
+    TGraph* graph = new TGraph(n, e_field.data(), y.data());
+    graph->SetTitle("Light Yield ; Efield [kv_cm] ; LY ");
+   
+    graph->GetXaxis()->SetLimits(0 -10 , 10 + *std::max_element(e_field.begin(), e_field.end())); 
+    graph->GetYaxis()->SetRangeUser(0.9*(*std::min_element(y.begin(), y.end())), 1.1*(*std::max_element(y.begin(), y.end())));
+    graph->SetMarkerColor(kRed);
+    graph->SetMarkerStyle(kFullCircle);
+    graph->Draw("AP"); 
+
+    canvas->SetGrid();
+    canvas->Update();
+    canvas->SaveAs(("./figures/" + std::to_string(ch) + "/ly_ch" + std::to_string(ch) + ".png").c_str());
+
+    delete graph;
+    delete canvas;
+
+    gROOT->SetBatch(kFALSE);
 }
 
 bool waveforms_Analyser::starts_with(const std::string &str, const std::string &prefix)

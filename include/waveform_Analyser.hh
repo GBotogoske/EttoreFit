@@ -52,6 +52,8 @@ class waveform_Analyser
         const double get_fit_param_0(const int i);
         const std::vector<double> get_fit_params_0();
 
+        const double calc_light_yield();
+
         void save_fig_fit();
 
         int cont_conv = 0;
